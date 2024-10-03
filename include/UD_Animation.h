@@ -25,7 +25,11 @@ namespace UD
         AnimationFileStatus status;
         std::string error;
     };
-
+    struct SLSBFile
+    {
+       std::string contents;
+       std::string prefix;
+    };
     class AnimationManager
     {
     SINGLETONHEADER(AnimationManager);
@@ -59,6 +63,7 @@ namespace UD
         bool _init = false;
         ActorMap<DisableCounter> _weapondisabled;
         std::unordered_map<std::string,AnimationFile> _jsoncache;
+        std::unordered_map<std::string,SLSBFile> _slsbcache;
         mutable Utils::Spinlock _SaveLock;
     };
 

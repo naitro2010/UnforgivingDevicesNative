@@ -254,7 +254,25 @@ std::vector<std::string> UD::AnimationManager::GetAnimationsFromJSON(std::string
     }
 
     LOG("AnimationManager::GetAnimationsFromJSON({},{},{}) Result:",a_def,a_constraintsORA1,a_constraintsORA2)
-    for (auto&& it : loc_res)
+    std::vector<std::string> slsb_loc_res = {"OK"};
+    for (std::string anim_name : loc_res) {
+       bool found_slsb=false;
+        if (anim_name != std::string("-1") && anim_name != std::string("OK")) {
+            for (auto slsbfilepair : _slsbcache) {
+               auto slsbfile=slsbfilepair.second;
+               if (slsbfile.contents.find(std::format("{}{}{}","\"",std::string(anim_name),"\"")) != -1)
+               {
+                   slsb_loc_res.push_back(std::string(std::format("{}{}",slsbfile.prefix,anim_name)).c_str());
+                   found_slsb=true;
+                   break;
+               }
+            }
+       }
+       if (found_slsb==false) {
+               slsb_loc_res.push_back(anim_name);
+       }
+    }
+    for (auto&& it : slsb_loc_res)
     {
         LOG("\t{}",it)
     }
@@ -431,7 +449,36 @@ void UD::AnimationManager::Setup()
 
         std::string loc_animpath = std::filesystem::current_path().string() + "\\Data\\skse\\plugins\\StorageUtilData\\UD\\Animations";
         std::regex loc_regex(R"regex(.*\\(.*\.[jJ][sS][oO][nN]))regex");
-
+        std::string loc_slsb_jsonpath = std::filesystem::current_path().string() + "\\Data\\skse\\Sexlab\\Registry\\Source";
+        std::regex loc_slsb_regex(R"regex(.*\\(.*\.[sS][lL][sS][bB][jJ][sS][oO][nN]))regex");
+        std::regex slsb_prefix_hash_regex(R"regex(.*\"prefix_hash\"\:[\s*]\"([^\"]*)\")regex");
+        for (const auto & entry : std::filesystem::directory_iterator(loc_slsb_jsonpath))
+        {
+            std::string loc_path = entry.path().string();
+            if (entry.is_regular_file() && std::regex_match(loc_path,loc_regex))
+            {
+               std::fstream loc_ifile(loc_path,std::ios::in);
+               boost::json::value loc_json;
+                if (loc_ifile.is_open())
+                {
+                   const std::string loc_jsonname = std::regex_replace(loc_path,loc_regex,"$1");
+                    try
+                    {
+                            std::stringstream buffer;
+                           buffer << loc_ifile.rdbuf();
+                           SLSBFile slsbfile;
+                           slsbfile.contents=buffer.str();
+                           std::string prefix=std::regex_replace(slsbfile.contents,slsb_prefix_hash_regex,"$1");
+                           slsbfile.prefix=prefix;
+                           _slsbcache[loc_jsonname]=slsbfile;
+                           
+                    }
+                   catch (const std::exception& e) {
+                       ERROR("Error reading slsbfile {} - {}",loc_jsonname,e.what())
+                   }
+               }
+           }
+        }
 
         for (const auto & entry : std::filesystem::directory_iterator(loc_animpath))
         {
