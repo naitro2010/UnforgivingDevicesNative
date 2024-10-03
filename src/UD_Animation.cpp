@@ -450,7 +450,7 @@ void UD::AnimationManager::Setup()
         std::string loc_animpath = std::filesystem::current_path().string() + "\\Data\\skse\\plugins\\StorageUtilData\\UD\\Animations";
         std::regex loc_regex(R"regex(.*\\(.*\.[jJ][sS][oO][nN]))regex");
         std::string loc_slsb_jsonpath = std::filesystem::current_path().string() + "\\Data\\skse\\Sexlab\\Registry\\Source";
-        std::regex loc_slsb_regex(R"regex(.*\\(.*\.[sS][lL][sS][bB][jJ][sS][oO][nN]))regex");
+        std::regex loc_slsb_regex(R"regex(.*\\(.*\.[sS][lL][sS][bB]\.[jJ][sS][oO][nN]))regex");
         std::regex slsb_prefix_hash_regex(R"regex(.*\"prefix_hash\"\:[\s*]\"([^\"]*)\")regex");
         for (const auto & entry : std::filesystem::directory_iterator(loc_slsb_jsonpath))
         {
